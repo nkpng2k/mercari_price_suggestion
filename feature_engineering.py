@@ -57,7 +57,7 @@ class MercariFeatureEngineering(object):
                 clean_list.append(word)
         return clean_list
 
-    def remove_stopwords(self, token_list):
+    def no_stopwords(self, token_list):
         no_stop_words = [word for word in token_list
                          if word not in self.stop_words]
         return no_stop_words
@@ -81,25 +81,31 @@ class MercariFeatureEngineering(object):
         self.fill_na('category_name', 'cat_Was_null', 'None/None/None')
         self.fill_na('brand_name', 'brand_was_null', 'no_label')
         self.fill_na('item_description', 'desc_was_null', 'No description')
+        print ('All Nulls Filled, New Binary Columns Created!')
         self.split_categories('category_name', '/')
+        print('Categories Split!')
         self.apply_func('desc_tokens', 'item_description', self.tokenize)
-        self.apply_func('desc_tokens', 'desc_tokens', self.remove_stopwords)
+        print('Tokenized!')
+        self.apply_func('desc_tokens', 'desc_tokens', self.no_stopwords)
+        print('No Stop Words!')
         self.apply_func('lemmed_tokens', 'desc_tokens', self.lemmatize)
+        print('Lemmatized!')
 
 
 if __name__ == "__main__":
 
     feat_eng = MercariFeatureEngineering('data/train.tsv', '\t')
     feat_eng.engineer_features()
-    test_eng = MercariFeatureEngineering('data/train.tsv', '\t')
-    test_eng.fill_na('category_name', 'cat_was_null', 'None/None/None')
-    test_eng.fill_na('brand_name', 'brand_Was_null', 'no_label')
-    test_eng.fill_na('item_description', 'desc_was_null', 'No description')
-    test_eng.split_categories('category_name', '/')
 
-    test_eng.apply_func('desc_tokens', 'item_description', test_eng.tokenize)
-    test_eng.apply_func('desc_tokens', 'desc_tokens', test_eng.remove_stopwords)
-    test_eng.apply_func('lemmed_tokens', 'desc_tokens', test_eng.lemmatize)
+    # test_eng = MercariFeatureEngineering('data/train.tsv', '\t')
+    # test_eng.fill_na('category_name', 'cat_was_null', 'None/None/None')
+    # test_eng.fill_na('brand_name', 'brand_Was_null', 'no_label')
+    # test_eng.fill_na('item_description', 'desc_was_null', 'No description')
+    # test_eng.split_categories('category_name', '/')
+
+    # test_eng.apply_func('desc_tokens', 'item_description', test_eng.tokenize)
+    # test_eng.apply_func('desc_tokens', 'desc_tokens', test_eng.no_stopwords)
+    # test_eng.apply_func('lemmed_tokens', 'desc_tokens', test_eng.lemmatize)
 
 
     # stop_words = set(stopwords.words('english'))
