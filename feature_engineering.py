@@ -31,12 +31,13 @@ class MercariFeatureEngineering(object):
         else:
             return wordnet.NOUN
 
-    def fill_na(self, column_name, fill_with):
+    def fill_na(self, column_name, new_col, fill_with):
+        self.train[new_col] = self.train[column_name].isnull().astype(int)
         self.train[column_name] = self.train[column_name].fillna(fill_with)
 
     def split_categories(self, column_name, split_on):
         top, middle, bottom = [], [], []
-        for i, row in train.iterrows():
+        for i, row in self.train.iterrows():
             hierarchy_string = row[column_name]
             hierarchy_list = hierarchy_string.split(split_on)
             top.append(hierarchy_list[0])
@@ -77,9 +78,9 @@ class MercariFeatureEngineering(object):
         self.train[new_name] = self.train[from_col].apply(lambda x: func(x))
 
     def engineer_features(self):
-        self.fill_na('category_name', 'None/None/None')
-        self.fill_na('brand_name', 'no_label')
-        self.fill_na('item_description', 'No description')
+        self.fill_na('category_name', 'cat_Was_null', 'None/None/None')
+        self.fill_na('brand_name', 'brand_was_null', 'no_label')
+        self.fill_na('item_description', 'desc_was_null', 'No description')
         self.split_categories('category_name', '/')
         self.apply_func('desc_tokens', 'item_description', self.tokenize)
         self.apply_func('desc_tokens', 'desc_tokens', self.remove_stopwords)
@@ -90,6 +91,15 @@ if __name__ == "__main__":
 
     feat_eng = MercariFeatureEngineering('data/train.tsv', '\t')
     feat_eng.engineer_features()
+    test_eng = MercariFeatureEngineering('data/train.tsv', '\t')
+    test_eng.fill_na('category_name', 'cat_was_null', 'None/None/None')
+    test_eng.fill_na('brand_name', 'brand_Was_null', 'no_label')
+    test_eng.fill_na('item_description', 'desc_was_null', 'No description')
+    test_eng.split_categories('category_name', '/')
+
+    test_eng.apply_func('desc_tokens', 'item_description', test_eng.tokenize)
+    test_eng.apply_func('desc_tokens', 'desc_tokens', test_eng.remove_stopwords)
+    test_eng.apply_func('lemmed_tokens', 'desc_tokens', test_eng.lemmatize)
 
 
     # stop_words = set(stopwords.words('english'))
