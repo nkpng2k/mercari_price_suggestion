@@ -77,7 +77,7 @@ class MercariFeatureEngineering(object):
     def apply_func(self, new_name, from_col, func):
         self.train[new_name] = self.train[from_col].apply(lambda x: func(x))
 
-    def engineer_features(self):
+    def engineer_features(self, csv_out_path):
         self.fill_na('category_name', 'cat_Was_null', 'None/None/None')
         self.fill_na('brand_name', 'brand_was_null', 'no_label')
         self.fill_na('item_description', 'desc_was_null', 'No description')
@@ -90,12 +90,18 @@ class MercariFeatureEngineering(object):
         print('No Stop Words!')
         self.apply_func('lemmed_tokens', 'desc_tokens', self.lemmatize)
         print('Lemmatized!')
+        self.train.to_csv(csv_out_path, index=False)
 
 
 if __name__ == "__main__":
 
     feat_eng = MercariFeatureEngineering('data/train.tsv', '\t')
-    feat_eng.engineer_features()
+    feat_eng.engineer_features('data/new_features_added.csv')
+    feat_eng.train.to_csv('data/new_features_added.csv', index=False)
+    feat_eng.train.head()
+
+    testing = pd.read_csv('data/new_features_added.csv')
+    testing.head()
 
     # test_eng = MercariFeatureEngineering('data/train.tsv', '\t')
     # test_eng.fill_na('category_name', 'cat_was_null', 'None/None/None')
