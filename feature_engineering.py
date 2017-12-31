@@ -4,10 +4,6 @@ from nltk.stem.wordnet import WordNetLemmatizer as wnl
 from nltk.corpus import wordnet
 from nltk.corpus import stopwords
 from string import punctuation
-# from sklearn.decomposition import TruncatedSVD
-# from sklearn.feature_extraction.text import TfidfVectorizer
-# from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-# from sklearn.model_selection import train_test_split
 
 
 class MercariFeatureEngineering(object):
@@ -102,40 +98,3 @@ if __name__ == "__main__":
 
     testing = pd.read_csv('data/new_features_added.csv')
     testing.head()
-
-    # test_eng = MercariFeatureEngineering('data/train.tsv', '\t')
-    # test_eng.fill_na('category_name', 'cat_was_null', 'None/None/None')
-    # test_eng.fill_na('brand_name', 'brand_Was_null', 'no_label')
-    # test_eng.fill_na('item_description', 'desc_was_null', 'No description')
-    # test_eng.split_categories('category_name', '/')
-
-    # test_eng.apply_func('desc_tokens', 'item_description', test_eng.tokenize)
-    # test_eng.apply_func('desc_tokens', 'desc_tokens', test_eng.no_stopwords)
-    # test_eng.apply_func('lemmed_tokens', 'desc_tokens', test_eng.lemmatize)
-
-
-    # stop_words = set(stopwords.words('english'))
-    #
-    # train = pd.read_csv('data/train.tsv', delimiter='\t')
-    # train['category_name'] = train['category_name'].fillna('None/None/None')
-    #
-    # train['brand_name'] = train['brand_name'].fillna('no_label')
-    #
-    # train['item_description'] = train['item_description'].fillna('No description')
-    #
-    # top, middle, bottom = [], [], []
-    # for i, row in train.iterrows():
-    #     hierarchy_string = row['category_name']
-    #     hierarchy_list = hierarchy_string.split('/')
-    #     top.append(hierarchy_list[0])
-    #     middle.append(hierarchy_list[1])
-    #     bottom.append(hierarchy_list[2])
-    # train['category_top'] = top
-    # train['category_middle'] = middle
-    # train['category_bottom'] = bottom
-    #
-    # train['description_tokens'] = train['item_description'].apply(lambda x: tokenize(x))
-    #
-    # train['description_tokens'] = train['description_tokens'].apply(lambda x: remove_stopwords(x))
-    #
-    # train['lemmed_tokens'] = train['description_tokens'].apply(lambda x: lemmatize(x))
