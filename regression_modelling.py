@@ -52,7 +52,5 @@ class MercariModeling(object):
         return clf.best_estimator_, clf.best_params_
 
 
-
-
 if __name__ == "__main__":
     models = MercariModeling('data/new_features_added.csv')
