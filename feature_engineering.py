@@ -73,7 +73,11 @@ class MercariFeatureEngineering(object):
     def apply_func(self, new_name, from_col, func):
         self.train[new_name] = self.train[from_col].apply(lambda x: func(x))
 
+    def drop_rows_with_value(self, column, value):
+        self.train = self.train[self.train[column] != value]
+
     def engineer_features(self, csv_out_path):
+        self.drop_rows_with_value('price', 0)
         self.fill_na('category_name', 'cat_Was_null', 'None/None/None')
         self.fill_na('brand_name', 'brand_was_null', 'no_label')
         self.fill_na('item_description', 'desc_was_null', 'No description')
@@ -96,5 +100,4 @@ if __name__ == "__main__":
     feat_eng.train.to_csv('data/new_features_added.csv', index=False)
     feat_eng.train.head()
 
-    testing = pd.read_csv('data/new_features_added.csv')
-    testing.head()
+    testing = pd.read_csv('data/new_features_dropped_zeros.csv')
