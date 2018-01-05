@@ -19,14 +19,14 @@ def process_pricing_data(filename, csv_out_path):
         filename, ',').engineer_features(csv_out_path)
     pricing_contents = pd.read_csv(csv_out_path)
     # Tfidf on lemmatized item descriptions
-    vectorizer = TfidfVectorizer(
-        preprocessor=lambda x: x, tokenizer=lambda x: x).fit(pricing_contents['lemmed_tokens'])
+    vectorizer = TfidfVectorizer().fit(pricing_contents['lemmed_tokens'])
     lem_vectorized = vectorizer.transform(pricing_contents['lemmed_tokens'])
-
+    print lem_vectorized.shape
+    print type(pricing_contents.iloc[0]['lemmed_tokens'])
     # Tfidf on brand names
     vectorizer = TfidfVectorizer().fit(pricing_contents['brand_name'])
     brand_vectorized = vectorizer.transform(pricing_contents['brand_name'])
-
+    print brand_vectorized.shape
     # Put into one matrix
     pricing_as_mat = sparse.hstack(
         (lem_vectorized, brand_vectorized))
@@ -67,18 +67,14 @@ if __name__ == "__main__":
     pricing_data_contents, pricing_mat = process_pricing_data(
         '/Users/hslord/kaggle/mercari_price_suggestion/data/train_sample.csv',
         'data/new_features_added.csv')
-    pricing_data_contents.iloc[118]
+    pricing_data_contents.iloc[990]
     pricing_data_contents.head()
-    similar_1 = x_most_similar(pricing_mat, 118)
-    avg_price_1 = avg_similar_items(pricing_data_contents, similar_1)
-    print price_diff(pricing_data_contents, 118, avg_price_1)
-
-    for x in similar_1:
+    similar = x_most_similar(pricing_mat, 990)
+    avg_price = avg_similar_items(pricing_data_contents, similar)
+    price_diff = price_diff(pricing_data_contents, 990, avg_price)
+    for x in similar:
         print pricing_data_contents.iloc[x][['brand_name', 'item_description']]
 
-    pricing_data_contents[pricing_data_contents['brand_name']
-                          == "Victoria's Secret"]
-    pricing_data_contents.groupby('brand_name').count()
 
 # train = pd.read_csv(
 #     '/Users/hslord/kaggle/mercari_price_suggestion/data/train_sample.tsv', delimiter='\t')
