@@ -12,9 +12,9 @@ class MercariModeling(object):
         self.train = pd.read_csv(filepath, delimiter=delimiter)
 
     def nlp_vectorize(self, column_name):
-        vectorizer = TfidfVectorizer(preprocessor=lambda x: x,
-                                     tokenizer=lambda x: x)
-        vectorizer.fit(self.train[column_name])
+        vectorizer = TfidfVectorizer().fit(self.train[column_name])
+        # NOTE: removed preprocessor = lambda x: x, tokenizer = lambda x: x
+        #       It was giving weird results
         vect_tokens = vectorizer.transform(self.train[column_name])
 
         return vectorizer, vect_tokens
