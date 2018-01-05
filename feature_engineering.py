@@ -100,12 +100,4 @@ if __name__ == "__main__":
     feat_eng.train.to_csv('data/new_features_added.csv', index=False)
     feat_eng.train.head()
 
-    # size = 6
-    # window = 8
-    # testing['brand_name'] = testing['brand_name'].astype('category')
-    # testing['brand_name'].cat.categories = ["Feature %s %s" % ('brand_name',g) for g in testing['brand_name'].cat.categories]
-    # x_w2v = testing['brand_name'].values
-    # # shuffle(x_w2v)
-    # x_small = x_w2v[:10000]
-    # shuffle(x_small)
-    # w2v = Word2Vec(x_small,size=size,window=window)
+    testing = pd.read_csv('data/new_features_dropped_zeros.csv')
