@@ -12,15 +12,17 @@ def process_pricing_data(filename, csv_out_path):
     '''
     Returns a tuple containing:
         - a dataframe of tokenized item descriptions
-        - a sparse matrix of cosine similarities between reduced item descriptions
+        - a sparse matrix of cosine similarities between
+          reduced item descriptions
     '''
     # Process Data
     MercariFeatureEngineering(
         filename, ',').engineer_features(csv_out_path)
     pricing_contents = pd.read_csv(csv_out_path)
     # Tfidf on lemmatized item descriptions
-    vectorizer = TfidfVectorizer(
-        preprocessor=lambda x: x, tokenizer=lambda x: x).fit(pricing_contents['lemmed_tokens'])
+    vectorizer = TfidfVectorizer(preprocessor=lambda x: x,
+                                 tokenizer=lambda x: x)
+    vectorizer.fit(pricing_contents['lemmed_tokens'])
     lem_vectorized = vectorizer.transform(pricing_contents['lemmed_tokens'])
 
     # Tfidf on brand names
@@ -52,10 +54,16 @@ def x_most_similar(mat, item_idx, x=100, sim_thresh=0.65):
 
 
 def avg_similar_items(price_mat, similar_idxs):
-    prices = []
-    for idx in similar_idxs:
-        prices.append(price_mat.iloc[idx]['price'])
-    avg_price = np.mean(prices)
+    """
+    INPUT: price_mat: pandas dataframe
+           similar_idxs: list of indices
+    OUTPUT: Average price of similar items
+    """
+    # prices = []
+    # for idx in similar_idxs:
+    #     prices.append(price_mat.iloc[idx]['price'])
+    # avg_price = np.mean(prices)
+    avg_price = np.mean(price_mat.iloc[similar_idxs]['price'])
     return avg_price
 
 
