@@ -47,8 +47,11 @@ class MercariModeling(object):
     def randomforest_similarity(self, n_estimators, X, y):
         self.rf = RandomForestRegressor(n_estimators=n_estimators)
         self.rf.fit(X, y)
+        print ('Done Fitting Forest')
         leaf_mat = self._which_tree_leaf(X)
+        print ('Done Finding Which Leaf')
         sim_mat = self._jaccard_similarity(leaf_mat)
+        print ('Done Finding Similarity')
         return sim_mat
 
     def create_test_train_splits(self, train_columns, target_column, split):
