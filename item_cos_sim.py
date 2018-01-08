@@ -38,12 +38,12 @@ def process_pricing_data(filename, csv_out_path):
     return pricing_contents, pricing_as_mat
 
 
-def x_most_similar(mat, item_idx, x=100, sim_thresh=0.65):
+def x_most_similar(mat, item_idx, x=100):
     '''
     INPUT:
-        - matrix of cosine similarities
-        - id for row calculating similarities
-        - number of rows to compare that id to
+        - mat: cosine similarity matrix for items
+        - item_idx: id for row calculating similarities
+        - x: number of rows to compare that id to
     OUTPUT:
         - list of indices of x most similar rows
     '''
@@ -58,16 +58,42 @@ def avg_similar_items(price_mat, similar_idxs):
            similar_idxs: list of indices
     OUTPUT: Average price of similar items
     """
-    # prices = []
-    # for idx in similar_idxs:
-    #     prices.append(price_mat.iloc[idx]['price'])
-    # avg_price = np.mean(prices)
     avg_price = np.mean(price_mat.iloc[similar_idxs]['price'])
     return avg_price
 
 
 def price_diff(price_mat, idx, avg_price):
     return price_mat.iloc[idx]['price'] - avg_price
+
+
+def avg_for_all(mat, price_mat, x=100):
+    '''
+    INPUT:
+        - mat: cosine similarity matrix for items
+        - price_mat: pandas dataframe
+        - x: number of rows to compare that id to
+    OUTPUT:
+        - predicted average price for all items
+    '''
+    predicted_prices = []
+    for idx in xrange(mat.shape[0]):
+        similar_idxs = x_most_similar(mat, idx, x)
+        avg_price = avg_similar_items(price_mat, similar_idxs)
+        predicted_prices.append(avg_price)
+    return predicted_prices
+
+
+def rmse_results(predicted_prices, price_mat):
+    '''
+    INPUT:
+        - predicted_prices: list of predicted prices for each item
+        - price_mat: pandas dataframe
+    OUTPUT:
+        - RMSE for model
+    '''
+    actual_prices = price_mat['price'].values
+    rmese = np.sqrt(mean_squared_error(actual_prices, predicted_prices))
+    return rmse
 
 
 if __name__ == "__main__":
