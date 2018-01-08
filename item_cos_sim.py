@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from scipy import sparse
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics import mean_squared_error
 from time import time
 from feature_engineering import MercariFeatureEngineering
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -22,68 +23,52 @@ def process_pricing_data(filename, csv_out_path):
     # Tfidf on lemmatized item descriptions
     vectorizer = TfidfVectorizer().fit(pricing_contents['lemmed_tokens'])
     lem_vectorized = vectorizer.transform(pricing_contents['lemmed_tokens'])
-    print lem_vectorized.shape
-    print type(pricing_contents.iloc[0]['lemmed_tokens'])
     # Tfidf on brand names
     vectorizer = TfidfVectorizer().fit(pricing_contents['brand_name'])
     brand_vectorized = vectorizer.transform(pricing_contents['brand_name'])
-    print brand_vectorized.shape
     # Put into one matrix
     pricing_as_mat = sparse.hstack(
         (lem_vectorized, brand_vectorized))
 
     # Put into similarity matrix
     pricing_as_mat = cosine_similarity(pricing_as_mat)
+    # Making corresponding index similarities = 0 instead of 1
+    np.place(pricing_as_mat, pricing_as_mat == 1, [0])
     print 'Cosine Similarity Done!'
     return pricing_contents, pricing_as_mat
 
 
-def x_most_similar(mat, item_idx, x=100):
+def x_most_similar(mat, x=100):
     '''
     INPUT:
         - mat: cosine similarity matrix for items
-        - item_idx: id for row calculating similarities
         - x: number of rows to compare that id to
     OUTPUT:
         - list of indices of x most similar rows
     '''
-    top_idxs = np.argpartition(mat, -x)[item_idx, -x:]
-    top_idxs = [idx for idx in top_idxs if idx != item_idx]
+    top_idxs = np.argpartition(mat, -x, axis=1)[:, -x:]
     return top_idxs
 
 
-def avg_similar_items(price_mat, similar_idxs):
-    """
-    INPUT: price_mat: pandas dataframe
-           similar_idxs: list of indices
-    OUTPUT: Average price of similar items
-    """
-    avg_price = np.mean(price_mat.iloc[similar_idxs]['price'])
-    return avg_price
-
-
-def price_diff(price_mat, idx, avg_price):
-    return price_mat.iloc[idx]['price'] - avg_price
-
-
-def avg_for_all(mat, price_mat, x=100):
+def avg_for_all(top_mat, price_mat):
     '''
     INPUT:
-        - mat: cosine similarity matrix for items
+        - top_mat: matrix containing top x most similar indices to each item
         - price_mat: pandas dataframe
         - x: number of rows to compare that id to
     OUTPUT:
         - predicted average price for all items
     '''
     predicted_prices = []
-    for idx in xrange(mat.shape[0]):
-        similar_idxs = x_most_similar(mat, idx, x)
-        avg_price = avg_similar_items(price_mat, similar_idxs)
+    for idx in xrange(top_mat.shape[0]):
+        sim_idx = top_mat[idx]
+        avg_price = np.mean(price_mat.iloc[sim_idx]['price'])
         predicted_prices.append(avg_price)
+    print 'Prices Predicted!'
     return predicted_prices
 
 
-def rmse_results(predicted_prices, price_mat):
+def results_metrics(predicted_prices, price_mat):
     '''
     INPUT:
         - predicted_prices: list of predicted prices for each item
@@ -92,26 +77,29 @@ def rmse_results(predicted_prices, price_mat):
         - RMSE for model
     '''
     actual_prices = price_mat['price'].values
-    rmese = np.sqrt(mean_squared_error(actual_prices, predicted_prices))
-    return rmse
+    rmse = np.sqrt(mean_squared_error(actual_prices, predicted_prices))
+    rmsle = sum((np.log(predicted_prices) - np.log(actual_prices))
+                ** 2) / len(predicted_prices)
+    print 'Metrics Calculated!'
+    return rmse, rmsle
 
 
 if __name__ == "__main__":
-    pricing_data_contents, pricing_mat = process_pricing_data(
+    pricing_data_contents, cos_mat = process_pricing_data(
         '/Users/hslord/kaggle/mercari_price_suggestion/data/train_sample.csv',
         'data/new_features_added.csv')
-    pricing_data_contents.iloc[990]
-    pricing_data_contents.head()
-    similar = x_most_similar(pricing_mat, 990)
-    avg_price = avg_similar_items(pricing_data_contents, similar)
-    price_diff = price_diff(pricing_data_contents, 990, avg_price)
-    for x in similar:
-        print pricing_data_contents.iloc[x][['brand_name', 'item_description']]
+    top_similarities = x_most_similar(cos_mat, x=100)
+    predicted_prices_sample = avg_for_all(
+        top_similarities, pricing_data_contents)
+    rmse_sample, rmsle_sample = results_metrics(
+        predicted_prices_sample, pricing_data_contents)
 
+    # for x in similar:
+    #     print pricing_data_contents.iloc[x][['brand_name', 'item_description']]
 
-# train = pd.read_csv(
-#     '/Users/hslord/kaggle/mercari_price_suggestion/data/train_sample.tsv',
-#     delimiter='\t')
-# train = train.iloc[:30000]
-# train.to_csv(
-#     '/Users/hslord/kaggle/mercari_price_suggestion/data/train_sample.csv')
+train = pd.read_csv(
+    '/Users/hslord/kaggle/mercari_price_suggestion/data/train.tsv',
+    delimiter='\t')
+train = train.iloc[:5000]
+train.to_csv(
+    '/Users/hslord/kaggle/mercari_price_suggestion/data/train_sample.csv')
