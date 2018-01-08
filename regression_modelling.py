@@ -16,11 +16,18 @@ class MercariModeling(object):
         self.rf = None
 
     def _which_tree_leaf(self, X):
-        ret_mat = np.zeros((X.shape[0], len(self.rf.estimators_)))
+        ret_mat = np.empty((X.shape[0], len(self.rf.estimators_)))
         for i, tree in enumerate(self.rf.estimators_):
             labels = tree.apply(X)
             ret_mat[:, i] = labels
         return ret_mat
+
+    def _most_similar(self, similarity_matrix, n_similar):
+        idx_top_sim = np.empty((similarity_matrix.shape[0], n_similar))
+        for i, row in enumerate(similarity_matrix):
+            top_sim = similarity_matrix.argsort()[-n_similar:][::-1]
+            idx_top_sim[i] = top_sim
+        return idx_top_sim
 
     def _jaccard_similarity(self, leaf_mat):
         similarity_matrix = np.empty((leaf_mat.shape[0], leaf_mat.shape[0]))
