@@ -25,7 +25,7 @@ class MercariModeling(object):
     def _most_similar(self, similarity_matrix, n_similar):
         idx_top_sim = np.empty((similarity_matrix.shape[0], n_similar))
         for i, row in enumerate(similarity_matrix):
-            top_sim = similarity_matrix.argsort()[-n_similar:][::-1]
+            top_sim = row.argsort()[-n_similar:][::-1]
             idx_top_sim[i] = top_sim
         return idx_top_sim
 

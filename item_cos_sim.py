@@ -84,7 +84,8 @@ if __name__ == "__main__":
 
 
 # train = pd.read_csv(
-#     '/Users/hslord/kaggle/mercari_price_suggestion/data/train_sample.tsv', delimiter='\t')
+#     '/Users/hslord/kaggle/mercari_price_suggestion/data/train_sample.tsv',
+#     delimiter='\t')
 # train = train.iloc[:30000]
 # train.to_csv(
 #     '/Users/hslord/kaggle/mercari_price_suggestion/data/train_sample.csv')
