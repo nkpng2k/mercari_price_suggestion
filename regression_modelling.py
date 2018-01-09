@@ -1,10 +1,7 @@
 import pandas as pd
-import numpy as np
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics.pairwise import pairwise_distances as pw_dist
 
 # from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 
@@ -14,24 +11,6 @@ class MercariModeling(object):
     def __init__(self, filepath, delimiter=','):
         self.train = pd.read_csv(filepath, delimiter=delimiter)
         self.rf = None
-
-    def _which_tree_leaf(self, X):
-        ret_mat = np.empty((X.shape[0], len(self.rf.estimators_)))
-        for i, tree in enumerate(self.rf.estimators_):
-            labels = tree.apply(X)
-            ret_mat[:, i] = labels
-        return ret_mat
-
-    def _most_similar(self, similarity_matrix, n_similar):
-        idx_top_sim = np.empty((similarity_matrix.shape[0], n_similar))
-        for i, row in enumerate(similarity_matrix):
-            top_sim = row.argsort()[-n_similar:][::-1]
-            idx_top_sim[i] = top_sim
-        return idx_top_sim
-
-    def _jaccard_similarity(self, leaf_mat):
-        similarity_matrix = 1 - pw_dist(leaf_mat, metric='hamming')
-        return similarity_matrix
 
     def nlp_vectorize(self, column_name):
         vectorizer = TfidfVectorizer().fit(self.train[column_name])
@@ -47,16 +26,6 @@ class MercariModeling(object):
         svd_tokens = trunc_svd.transform(vectorized_tokens)
 
         return trunc_svd, svd_tokens
-
-    def randomforest_similarity(self, n_estimators, X, y):
-        self.rf = RandomForestRegressor(n_estimators=n_estimators)
-        self.rf.fit(X, y)
-        print ('Done Fitting Forest')
-        leaf_mat = self._which_tree_leaf(X)
-        print ('Done Finding Which Leaf')
-        sim_mat = self._jaccard_similarity(leaf_mat)
-        print ('Done Finding Similarity')
-        return sim_mat
 
     def create_test_train_splits(self, train_columns, target_column, split):
         if type(train_columns) is list:

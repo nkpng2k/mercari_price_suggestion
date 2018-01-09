@@ -1,9 +1,12 @@
 import pandas as pd
+import numpy as np
 import nltk
 from nltk.stem.wordnet import WordNetLemmatizer as wnl
 from nltk.corpus import wordnet
 from nltk.corpus import stopwords
 from string import punctuation
+from sklearn.metrics.pairwise import pairwise_distances as pw_dist
+from sklearn.ensemble import RandomForestRegressor
 
 
 class MercariFeatureEngineering(object):
@@ -14,6 +17,7 @@ class MercariFeatureEngineering(object):
         self.alphabet = set(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
                              'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
                              'u', 'v', 'w', 'x', 'y', 'z'])
+        self.rf = None
 
     def _get_wordnet_pos(self, treebank_tag):
         if treebank_tag.startswith('J'):
@@ -26,6 +30,24 @@ class MercariFeatureEngineering(object):
             return wordnet.ADV
         else:
             return wordnet.NOUN
+
+    def _which_tree_leaf(self, X):
+        ret_mat = np.empty((X.shape[0], len(self.rf.estimators_)))
+        for i, tree in enumerate(self.rf.estimators_):
+            labels = tree.apply(X)
+            ret_mat[:, i] = labels
+        return ret_mat
+
+    def _most_similar(self, similarity_matrix, n_similar):
+        idx_top_sim = np.empty((similarity_matrix.shape[0], n_similar))
+        for i, row in enumerate(similarity_matrix):
+            top_sim = row.argsort()[-n_similar:][::-1]
+            idx_top_sim[i] = top_sim
+        return idx_top_sim
+
+    def _jaccard_similarity(self, leaf_mat):
+        similarity_matrix = 1 - pw_dist(leaf_mat, metric='jaccard')
+        return similarity_matrix
 
     def fill_na(self, column_name, new_col, fill_with):
         self.train[new_col] = self.train[column_name].isnull().astype(int)
@@ -69,6 +91,17 @@ class MercariFeatureEngineering(object):
                                             pos=self._get_wordnet_pos(pos_tag))
             lemmed_tokens.append(lem_word)
         return lemmed_tokens
+
+    def randomforest_similarity(self, n_estimators, X, y):
+        self.rf = RandomForestRegressor(n_estimators=n_estimators, n_jobs=-1,
+                                        verbose=5)
+        self.rf.fit(X, y)
+        print ('Done Fitting Forest')
+        leaf_mat = self._which_tree_leaf(X)
+        print ('Done Finding Which Leaf')
+        sim_mat = self._jaccard_similarity(leaf_mat)
+        print ('Done Finding Similarity')
+        return sim_mat
 
     def apply_func(self, new_name, from_col, func):
         self.train[new_name] = self.train[from_col].apply(lambda x: func(x))
