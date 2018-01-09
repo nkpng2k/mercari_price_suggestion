@@ -110,7 +110,8 @@ class MercariFeatureEngineering(object):
         self.train = self.train[self.train[column] != value]
 
     def engineer_features(self, csv_out_path):
-        self.drop_rows_with_value('price', 0)
+        if 'price' in self.train.columns:
+            self.drop_rows_with_value('price', 0)
         self.fill_na('category_name', 'cat_Was_null', 'None/None/None')
         self.fill_na('brand_name', 'brand_was_null', 'no_label')
         self.fill_na('item_description', 'desc_was_null', 'No description')
