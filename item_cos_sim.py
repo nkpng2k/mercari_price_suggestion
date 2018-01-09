@@ -85,6 +85,12 @@ def results_metrics(predicted_prices, price_mat):
 
 
 if __name__ == "__main__":
+    train = pd.read_csv(
+        '/Users/hslord/kaggle/mercari_price_suggestion/data/train.tsv',
+        delimiter='\t')
+    train = train.iloc[:20000]
+    train.to_csv(
+        '/Users/hslord/kaggle/mercari_price_suggestion/data/train_sample.csv')
     pricing_data_contents, cos_mat = process_pricing_data(
         '/Users/hslord/kaggle/mercari_price_suggestion/data/train_sample.csv',
         'data/new_features_added.csv')
@@ -96,10 +102,3 @@ if __name__ == "__main__":
 
     # for x in similar:
     #     print pricing_data_contents.iloc[x][['brand_name', 'item_description']]
-
-train = pd.read_csv(
-    '/Users/hslord/kaggle/mercari_price_suggestion/data/train.tsv',
-    delimiter='\t')
-train = train.iloc[:5000]
-train.to_csv(
-    '/Users/hslord/kaggle/mercari_price_suggestion/data/train_sample.csv')
