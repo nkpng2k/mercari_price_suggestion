@@ -47,7 +47,7 @@ class MercariFeatureEngineering(object):
         return idx_top_sim
 
     def _jaccard_similarity(self, leaf_mat):
-        similarity_matrix = 1 - pw_dist(leaf_mat, metric='jaccard')
+        similarity_matrix = 1 - pw_dist(leaf_mat, metric='hamming')
         return similarity_matrix
 
     def _bad_jaccard(self, leaf_mat):
@@ -110,7 +110,7 @@ class MercariFeatureEngineering(object):
         print ('Done Fitting Forest')
         leaf_mat = self._which_tree_leaf(X)
         print ('Done Finding Which Leaf')
-        sim_mat = self._bad_jaccard(leaf_mat)
+        sim_mat = self._jaccard_similarity(leaf_mat)
         print ('Done Finding Similarity')
         return sim_mat
 
