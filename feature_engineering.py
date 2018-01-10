@@ -7,7 +7,7 @@ from nltk.corpus import stopwords
 from string import punctuation
 from sklearn.metrics.pairwise import pairwise_distances as pw_dist
 from sklearn.ensemble import RandomForestRegressor
-from slkearn.metrics import jaccard_similarity_score as jss
+from sklearn.metrics import jaccard_similarity_score as jss
 
 
 class MercariFeatureEngineering(object):
