@@ -46,8 +46,9 @@ class MercariFeatureEngineering(object):
             idx_top_sim[i] = top_sim
         return idx_top_sim
 
-    def _jaccard_similarity(self, leaf_mat):
-        similarity_matrix = 1 - pw_dist(leaf_mat, metric='hamming')
+    def _jaccard_similarity(self, train_leaf, test_leaf):
+        similarity_matrix = 1 - pw_dist(test_leaf, train_leaf,
+                                        n_jobs=-1, metric='hamming')
         return similarity_matrix
 
     def _bad_jaccard(self, leaf_mat):
@@ -103,14 +104,15 @@ class MercariFeatureEngineering(object):
             lemmed_tokens.append(lem_word)
         return lemmed_tokens
 
-    def randomforest_similarity(self, n_estimators, X, y):
+    def randomforest_similarity(self, n_estimators, X, y, X_test):
         self.rf = RandomForestRegressor(n_estimators=n_estimators, n_jobs=-1,
                                         verbose=5)
         self.rf.fit(X, y)
         print ('Done Fitting Forest')
-        leaf_mat = self._which_tree_leaf(X)
+        test_leaf_mat = self._which_tree_leaf(X_test)
+        train_leaf_mat = self._which_tree_leaf(X)
         print ('Done Finding Which Leaf')
-        sim_mat = self._jaccard_similarity(leaf_mat)
+        sim_mat = self._jaccard_similarity(train_leaf_mat, test_leaf_mat)
         print ('Done Finding Similarity')
         return sim_mat
 
