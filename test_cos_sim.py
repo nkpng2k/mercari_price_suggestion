@@ -1,12 +1,11 @@
 import pandas as pd
 import numpy as np
-from scipy import sparse
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics import mean_squared_error
 from time import time
 from feature_engineering import MercariFeatureEngineering
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.decomposition import NMF
+from sklearn.decomposition import TruncatedSVD
 
 
 def process_pricing_data(filename, csv_out_path):
@@ -23,12 +22,19 @@ def process_pricing_data(filename, csv_out_path):
     # Tfidf on lemmatized item descriptions
     vectorizer = TfidfVectorizer().fit(pricing_df['lemmed_tokens'])
     lem_vectorized = vectorizer.transform(pricing_df['lemmed_tokens'])
+    lem_svd = TruncatedSVD(n_components=4000)
+    lem_transform = lem_svd.fit_transform(lem_vectorized)
+    print lem_transform.shape
     # Tfidf on brand names
     vectorizer = TfidfVectorizer().fit(pricing_df['brand_name'])
     brand_vectorized = vectorizer.transform(pricing_df['brand_name'])
+    brand_svd = TruncatedSVD(n_components=400)
+    brand_transform = brand_svd.fit_transform(brand_vectorized)
+    print brand_transform.shape
     # Put into one matrix
-    pricing_as_mat = sparse.hstack(
-        (lem_vectorized, brand_vectorized))
+    pricing_as_mat = np.concatenate(
+        (lem_transform, brand_transform), axis=1)
+    print 'Matrix Returned!'
     return pricing_df, pricing_as_mat
 
 
@@ -74,22 +80,6 @@ def avg_for_all(top_mat, price_mat):
     return predicted_prices
 
 
-def results_metrics(predicted_prices, price_mat):
-    '''
-    INPUT:
-        - predicted_prices: list of predicted prices for each item
-        - price_mat: pandas dataframe
-    OUTPUT:
-        - RMSE for model
-    '''
-    actual_prices = price_mat['price'].values
-    rmse = np.sqrt(mean_squared_error(actual_prices, predicted_prices))
-    rmsle = sum((np.log(predicted_prices) - np.log(actual_prices))
-                ** 2) / len(predicted_prices)
-    print 'Metrics Calculated!'
-    return rmse, rmsle
-
-
 if __name__ == "__main__":
     # get desired number of train data points
     train = pd.read_csv(
@@ -116,10 +106,9 @@ if __name__ == "__main__":
     # cosine similarity of test compared to train
     cos_sim_test = cos_sim(train_sample_mat, test_sample_mat)
     # get x most similar
-    top_similarities = x_most_similar(cos_mat, x=100)
+    top_similarities = x_most_similar(cos_sim_test, x=10)
     # predict prices
     predicted_prices_sample = avg_for_all(
-        top_similarities, pricing_data_contents)
-    # get metrics
-    rmse_sample, rmsle_sample = results_metrics(
-        predicted_prices_sample, pricing_data_contents)
+        top_similarities, train_df)
+np.min(predicted_prices_sample)
+np.max(predicted_prices_sample)
