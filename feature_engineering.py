@@ -7,6 +7,7 @@ from nltk.corpus import stopwords
 from string import punctuation
 from sklearn.metrics.pairwise import pairwise_distances as pw_dist
 from sklearn.ensemble import RandomForestRegressor
+from slkearn.metrics import jaccard_similarity_score as jss
 
 
 class MercariFeatureEngineering(object):
@@ -48,6 +49,16 @@ class MercariFeatureEngineering(object):
     def _jaccard_similarity(self, leaf_mat):
         similarity_matrix = 1 - pw_dist(leaf_mat, metric='jaccard')
         return similarity_matrix
+
+    def _bad_jaccard(self, leaf_mat):
+        sim_mat = np.empty((leaf_mat.shape[0], leaf_mat.shape[0]))
+        count = 0
+        for i in xrange(leaf_mat.shape[0]):
+            print "top loop: {} completed".format(count)
+            for j in xrange(leaf_mat.shape[0]):
+                sim_mat[i, j] = jss(leaf_mat[i], leaf_mat[j])
+            count += 1
+        return sim_mat
 
     def fill_na(self, column_name, new_col, fill_with):
         self.train[new_col] = self.train[column_name].isnull().astype(int)
@@ -99,7 +110,7 @@ class MercariFeatureEngineering(object):
         print ('Done Fitting Forest')
         leaf_mat = self._which_tree_leaf(X)
         print ('Done Finding Which Leaf')
-        sim_mat = self._jaccard_similarity(leaf_mat)
+        sim_mat = self._bad_jaccard(leaf_mat)
         print ('Done Finding Similarity')
         return sim_mat
 
