@@ -23,12 +23,12 @@ def process_pricing_data(filename, csv_out_path):
     # Tfidf on lemmatized item descriptions
     vectorizer = TfidfVectorizer().fit(pricing_contents['lemmed_tokens'])
     lem_vectorized = vectorizer.transform(pricing_contents['lemmed_tokens'])
-    lem_svd = TruncatedSVD(n_components=4000)
+    lem_svd = TruncatedSVD(n_components=250)
     lem_transform = lem_svd.fit_transform(lem_vectorized)
     # Tfidf on brand names
     vectorizer = TfidfVectorizer().fit(pricing_contents['brand_name'])
     brand_vectorized = vectorizer.transform(pricing_contents['brand_name'])
-    brand_svd = TruncatedSVD(n_components=400)
+    brand_svd = TruncatedSVD(n_components=100)
     brand_transform = brand_svd.fit_transform(brand_vectorized)
     # Put into one matrix
     # pricing_as_mat = sparse.hstack(

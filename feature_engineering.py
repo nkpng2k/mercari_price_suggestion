@@ -77,6 +77,16 @@ class MercariFeatureEngineering(object):
         self.train['category_middle'] = middle
         self.train['category_bottom'] = bottom
 
+    def dummify_categories(self, col_top, col_mid, col_bot, col_brand, df):
+        brand_dummies = pd.get_dummies(df[col_brand])
+        cat_top_dummies = pd.get_dummies(df[col_top])
+        cat_mid_dummies = pd.get_dummies(df[col_mid])
+        cat_bot_dummies = pd.get_dummies(df[col_bot])
+        train_result = pd.concat([brand_dummies, cat_top_dummies,
+                                 cat_mid_dummies, cat_bot_dummies],
+                                 axis=1, join_axes=[brand_dummies.index])
+        return train_result
+
     def tokenize(self, string):
         clean_list = []
         description = string.lower()
