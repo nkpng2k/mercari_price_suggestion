@@ -6,7 +6,7 @@ from sklearn.metrics import mean_squared_error
 from time import time
 from feature_engineering import MercariFeatureEngineering
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.decomposition import NMF
+from sklearn.decomposition import TruncatedSVD
 
 
 def process_pricing_data(filename, csv_out_path):
@@ -23,13 +23,19 @@ def process_pricing_data(filename, csv_out_path):
     # Tfidf on lemmatized item descriptions
     vectorizer = TfidfVectorizer().fit(pricing_contents['lemmed_tokens'])
     lem_vectorized = vectorizer.transform(pricing_contents['lemmed_tokens'])
+    lem_svd = TruncatedSVD(n_components=4000)
+    lem_transform = lem_svd.fit_transform(lem_vectorized)
     # Tfidf on brand names
     vectorizer = TfidfVectorizer().fit(pricing_contents['brand_name'])
     brand_vectorized = vectorizer.transform(pricing_contents['brand_name'])
+    brand_svd = TruncatedSVD(n_components=400)
+    brand_transform = brand_svd.fit_transform(brand_vectorized)
     # Put into one matrix
-    pricing_as_mat = sparse.hstack(
-        (lem_vectorized, brand_vectorized))
-
+    # pricing_as_mat = sparse.hstack(
+    #     (lem_vectorized, brand_vectorized))
+    pricing_as_mat = np.concatenate(
+        (lem_transform, brand_transform), axis=1)
+    print 'Matrix Returned!'
     # Put into similarity matrix
     pricing_as_mat = cosine_similarity(pricing_as_mat)
     # Making corresponding index similarities = 0 instead of 1
@@ -88,17 +94,17 @@ if __name__ == "__main__":
     train = pd.read_csv(
         '/Users/hslord/kaggle/mercari_price_suggestion/data/train.tsv',
         delimiter='\t')
-    train = train.iloc[:20000]
+    # train = train.iloc[:10000]
     train.to_csv(
-        '/Users/hslord/kaggle/mercari_price_suggestion/data/train_sample.csv')
+        '/Users/hslord/kaggle/mercari_price_suggestion/data/train.csv')
     pricing_data_contents, cos_mat = process_pricing_data(
-        '/Users/hslord/kaggle/mercari_price_suggestion/data/train_sample.csv',
+        '/Users/hslord/kaggle/mercari_price_suggestion/data/train.csv',
         'data/new_features_added.csv')
     top_similarities = x_most_similar(cos_mat, x=100)
     predicted_prices_sample = avg_for_all(
         top_similarities, pricing_data_contents)
     rmse_sample, rmsle_sample = results_metrics(
         predicted_prices_sample, pricing_data_contents)
-
+    print rmsle_sample
     # for x in similar:
     #     print pricing_data_contents.iloc[x][['brand_name', 'item_description']]
