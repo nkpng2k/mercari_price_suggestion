@@ -114,6 +114,11 @@ class MercariFeatureEngineering(object):
             lemmed_tokens.append(lem_word)
         return lemmed_tokens
 
+    def clean_column(self, brand_name):
+        word = brand_name.lower()
+        word = ''.join([letter for letter in word if letter in self.alphabet])
+        return word
+
     def randomforest_similarity(self, n_estimators, X, y, X_test):
         self.rf = RandomForestRegressor(n_estimators=n_estimators, n_jobs=-1,
                                         verbose=5)
@@ -141,6 +146,13 @@ class MercariFeatureEngineering(object):
         print ('All Nulls Filled, New Binary Columns Created!')
         self.split_categories('category_name', '/')
         print('Categories Split!')
+        self.apply_func('brand_name', 'brand_name', self.clean_column)
+        self.apply_func('category_top', 'category_top', self.clean_column)
+        self.apply_func('category_middle', 'category_middle',
+                        self.clean_column)
+        self.apply_func('category_bottom', 'category_bottom',
+                        self.clean_column)
+        print('Cleaned Columns')
         self.apply_func('desc_tokens', 'item_description', self.tokenize)
         print('Tokenized!')
         self.apply_func('desc_tokens', 'desc_tokens', self.no_stopwords)
