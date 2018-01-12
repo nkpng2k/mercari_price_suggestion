@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
-from scipy import sparse
+# from scipy import sparse
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics import mean_squared_error
-from time import time
+# from time import time
 from feature_engineering import MercariFeatureEngineering
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
@@ -107,4 +107,5 @@ if __name__ == "__main__":
         predicted_prices_sample, pricing_data_contents)
     print rmsle_sample
     # for x in similar:
-    #     print pricing_data_contents.iloc[x][['brand_name', 'item_description']]
+    #     print pricing_data_contents.iloc[x][['brand_name',
+    #                                          'item_description']]
