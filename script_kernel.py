@@ -184,7 +184,7 @@ if __name__ == "__main__":
     start = datetime.now()
     leaves_df = f_eng.train_df[['brand_numeric', 'cat_top_numeric',
                                 'cat_mid_numeric', 'cat_bot_numeric',
-                                'price']].sample(frac=0.25)
+                                'price']].sample(frac=0.2)
     X_leaves = leaves_df.drop('price', axis=1)
     train_leaf = reg.which_leaf(X_leaves)
     mid = datetime.now()
